@@ -76,14 +76,14 @@ def secondaire():
         all_laser.draw(screen)
 
         #affichage des coeur du joueur en fonction de sa vie !
-        if player.health <= 300 and player.health >= 200:
+        if player.health == 3:
             screen.blit(heart, (0,0))
             screen.blit(heart, (80, 0))
             screen.blit(heart, (160, 0))
-        elif player.health <= 300 and player.health >= 200:
+        elif player.health == 2:
             screen.blit(heart, (0, 0))
             screen.blit(heart, (80, 0))
-        elif player.health <= 100 and player.health > 0:
+        elif player.health == 1:
             screen.blit(heart, (0, 0))
         else:
             main()
