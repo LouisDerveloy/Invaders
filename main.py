@@ -1,11 +1,11 @@
-####______importation______####
 import pygame
 from script.image import image
 from script.text import text
 from script.player import player
 from script.IA import IA
 from random import randint
-from time import sleep
+import time
+import threading
 pygame.init()
 ####______initialisation______####
 pygame.display.set_caption("STAR INVADER")
@@ -17,7 +17,7 @@ all_IA=pygame.sprite.Group()
 all_laser=pygame.sprite.Group()
 
 ####______chargement______####
-bg=pygame.image.load("image/background.jpg")
+bg=pygame.image.load("image/background.png")
 bouton_play=image("image/bouton_play.png",685,480)
 menu=image("image/STAR_INVADER.png", 550, 300)
 icone=pygame.image.load("image/icone.png")
@@ -27,6 +27,20 @@ game_over=pygame.image.load("image/game_over.png")
 
 ####______générale______####
 pygame.display.set_icon(icone)
+
+###_______Bioucle Chrono______####
+laserShootOn = True
+playerDomageOn = True
+#definition de la fonction asynchrone
+def laserChrono():
+    global laserShootOn
+    time.sleep(0.2)
+    laserShootOn = True
+
+def playerChrono():
+    global playerDomageOn
+    time.sleep(0.4)
+    playerDomageOn = True
 
 ####______boucles de jeux(menu)______####
 def main():
@@ -49,15 +63,19 @@ def main():
             if event.type == pygame.KEYUP:
                 pressed[event.key]=False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                x,y = event.pos
-                if bouton_play.rect.collidepoint(x ,y):
+                x, y = event.pos
+                if bouton_play.rect.collidepoint(x, y):
                     print("bouton clicker !")
                     secondaire()
                     break
 
 ####______boucle du jeux(jeux)______####
 def secondaire():
-    global screen,running,pressed,bg,menu,all_IA,all_laser
+    global screen,running,pressed,bg,menu,all_IA,all_laser,laserShootOn,playerDomageOn
+    player.rect.x = 895
+    player.rect.y = 900
+    for laser in all_laser:
+        all_laser.remove(laser)
     player.health = 3
     all_IA.empty()
     while running:
@@ -102,7 +120,11 @@ def secondaire():
                 all_IA.remove(ia)
 
         if pygame.sprite.spritecollide(player, all_IA, False, pygame.sprite.collide_mask):
-            player.health -= 100
+            if playerDomageOn == True:
+                player.health -= 1
+                playerDomageOn = False
+                thPlayer = threading.Thread(target=playerChrono)
+                thPlayer.start()
 
         #update laser
         for q in all_laser:
@@ -122,11 +144,20 @@ def secondaire():
         if pressed.get(pygame.K_s):
             player.move_down()
         if pressed.get(pygame.K_SPACE):
-            laser_x = player.rect.x + 50
-            laser_y = player.rect.y
-            laser = image("image/laser.png",laser_x,laser_y)
-            all_laser.add(laser)
-            print("tir lancé")
+            if laserShootOn == True:
+                laser_x = player.rect.x + 50
+                laser_y = player.rect.y
+                laser = image("image/laser.png",laser_x,laser_y)
+                all_laser.add(laser)
+                print("tir lancé")
+                laserShootOn = False
+                thLaser = threading.Thread(target=laserChrono)  # definintion du thread
+                thLaser.start()
+        if pressed.get(pygame.K_ESCAPE):
+            running = False
+            pygame.quit()
+            print("fermeture du jeu !")
+
 
 
         for event in pygame.event.get():

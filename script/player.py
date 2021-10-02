@@ -3,8 +3,8 @@ import pygame
 class player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.health = 300
-        self.max_health = 300
+        self.health = 3
+        self.max_health = 3
         self.velocity = 10
         self.image = pygame.image.load("image/battleship_player.png")
         self.rect = self.image.get_rect()
